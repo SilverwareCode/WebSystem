@@ -159,42 +159,6 @@ namespace WebSystem
             }
         }
 
-        //provádí Execute Scalar vracející Int
-        public static string ExecuteScalarStringOld(string myCmd1, string ConnectionStringName)
-        {
-            string myConnectionString = ReturnConnectionString(ConnectionStringName);
-
-
-            try
-            {
-                using (SqlConnection connDB1 = new SqlConnection(myConnectionString))
-                {
-                    SqlCommand cmd1 = new SqlCommand(myCmd1, connDB1);
-                    connDB1.Open();
-
-                    var myValue = cmd1.ExecuteScalar().ToString();
-
-                    if (String.IsNullOrEmpty(myValue) == false)
-                    {
-                        connDB1.Close();
-                        return myValue;
-                    }
-                    else
-                    {
-                        return "Error executing function ExecuteScalarString";
-                    }
-
-
-                }
-            }
-            catch (SqlException ex)
-            {
-                Debug.WriteLine(ex.Message);
-                return "Error executing ExecuteScalarString";
-            }
-        }
-
-
         public static string ExecuteScalarString(string sql, string ConnectionStringName)
         {
             string retVal = String.Empty;
@@ -220,13 +184,41 @@ namespace WebSystem
             return retVal;
         }
 
+        public static object ExecuteScalar(string sql, string ConnectionStringName)
+        {
+            string myConnectionString = ConfigurationManager.ConnectionStrings[ConnectionStringName].ConnectionString;
 
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(myConnectionString))
+                {
+                    SqlCommand sqlCommand = new SqlCommand(sql, connection);
+                    connection.Open();
+                    object myValue = sqlCommand.ExecuteScalar();
+                    connection.Close();
+                    return myValue;
+                }
+            }
+            catch (SqlException ex)
+            {
+                //throw new Exception("WebSystem.Database.ExecuteScalar error");
+                return null;
+            }
+        }
 
 
 
 
         //funkce vraci connection string podle zadaneho jmena
         public static string ReturnConnectionString(string ConnectionStringName)
+        {
+            //string myCS = ConfigurationManager.ConnectionStrings[ConnectionStringName].ConnectionString;
+            //return myCS;
+            return GetConnectionStringByName(ConnectionStringName);
+        }
+
+        //funkce vraci connection string podle zadaneho jmena
+        public static string GetConnectionStringByName(string ConnectionStringName)
         {
             string myCS = ConfigurationManager.ConnectionStrings[ConnectionStringName].ConnectionString;
             return myCS;
